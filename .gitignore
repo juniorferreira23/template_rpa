@@ -10,11 +10,15 @@ wheels/
 .coverage
 .ruff_cache
 .venv
-
 .env
 
+.idea
+.ruff_cache/
+
+tmp/*
 logs/*
 tmp/*
 data/*
 !.gitkeep
 
+celerybeat-schedule

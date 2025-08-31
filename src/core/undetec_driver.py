@@ -1,10 +1,8 @@
-from typing import List, Tuple, Union
+from typing import List, Union
 
-from selenium import webdriver
+import undetected_chromedriver as uc
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.webdriver import WebDriver
-from webdriver_manager.chrome import ChromeDriverManager
 
 from src.core.paths import PATH_TEMP
 
@@ -14,7 +12,6 @@ TypeListOptions = Union[bool, List[str]]
 
 
 list_options = [
-    '--window-size=1366,768',
     '--enable_downloads=true',
     '--lang=pt-BR',
     '--no-sandbox',
@@ -24,12 +21,11 @@ list_options = [
     '--ignore-certificate-errors',
     '--disable-gpu',
     '--disable-blink-features=AutomationControlled',
-    'user-agent=Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',  # noqa: E501
-]
-
-list_experimental_options: List = [
-    ['excludeSwitches', ['enable-automation']],
-    ['useAutomationExtension', False],
+    (
+        'user-agent=Mozilla/5.0 (Windows NT 11.0; Win64; x64) '
+        'AppleWebKit/537.36 (KHTML, like Gecko) '
+        'Chrome/138.0.0.0 Safari/537.36'
+    ),
 ]
 
 prefs = {
@@ -43,36 +39,29 @@ prefs = {
 }
 
 
-def inject_options(instance_options: Options, options_in: list[str]) -> None:
+def inject_options(
+    instance_options: Union[Options, uc.ChromeOptions], options_in: list[str]
+) -> None:
     for option in options_in:
         instance_options.add_argument(option)
 
 
-def inject_experimental_options(
-    instance_options: Options, options_in: List[Tuple[str, TypeListOptions]]
-) -> None:
-    for option in options_in:
-        instance_options.add_experimental_option(option[0], option[1])
-
-
-def inject_prefs(instance_options: Options, prefs_in: dict):
+def inject_prefs(
+    instance_options: Union[Options, uc.ChromeOptions], prefs_in: dict
+):
     instance_options.add_experimental_option('prefs', prefs_in)
 
 
 def get_webdriver(
     default_options: bool = True,
-    experimental_options: bool = True,
     default_prefs: bool = True,
     headless: bool = True,
     wait: int = 10,
 ) -> WebDriver:
-    options = Options()
+    options = uc.ChromeOptions()
 
     if default_options:
         inject_options(options, list_options)
-
-    if experimental_options:
-        inject_experimental_options(options, list_experimental_options)
 
     if default_prefs:
         inject_prefs(options, prefs)
@@ -80,18 +69,29 @@ def get_webdriver(
     if headless:
         options.add_argument('--headless=new')
 
-    driver = webdriver.Chrome(
-        service=ChromeService(ChromeDriverManager().install()), options=options
-    )
+    driver = uc.Chrome(options=options, headless=headless, use_subprocess=True)
+    driver.set_window_size(1366, 768)
 
     driver.execute_cdp_cmd(
         'Page.addScriptToEvaluateOnNewDocument',
         {
             'source': """
-            Object.defineProperty(navigator, 'webdriver', {
-            get: () => undefined
-            });
-        """
+            Object.defineProperty(
+                navigator,
+                'webdriver',
+                { get: () => undefined }
+            );
+            Object.defineProperty(
+                navigator,
+                'plugins',
+                { get: () => [1, 2, 3, 4, 5] }
+            );
+            Object.defineProperty(
+                navigator,
+                'languages',
+                { get: () => ['pt-BR', 'pt'] }
+            );
+            """
         },
     )
 

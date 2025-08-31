@@ -1,11 +1,16 @@
 import logging
 from pathlib import Path
 
-LOG_PATH = Path(__file__).parent.parent.parent / 'logs' / 'app.log'
-LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+PATH_LOG = Path.cwd() / 'logs'
+if not PATH_LOG.exists:
+    PATH_LOG.parent.mkdir(parents=True, exist_ok=True)
+
+FILE_LOG = PATH_LOG / 'app.log'
+if not FILE_LOG.exists():
+    FILE_LOG.touch()
 
 logging.basicConfig(
-    filename=str(LOG_PATH),
+    filename=str(FILE_LOG),
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(filename)s - %(message)s',
 )
