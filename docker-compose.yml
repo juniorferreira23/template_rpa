@@ -1,0 +1,44 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"   # broker
+      - "15672:15672" # painel web RabbitMQ
+    env_file:
+      - .env
+
+  worker:
+    build: .
+    container_name: celery_worker
+    command: uv run celery -A src.core.celery_app worker --loglevel=INFO
+    depends_on:
+      - rabbitmq
+    working_dir: /app
+
+  beat:
+    build: .
+    container_name: celery_beat
+    command: uv run celery -A src.scheduler beat --loglevel=INFO
+    depends_on:
+      - rabbitmq
+    working_dir: /app
+
+  flower:
+    build: .
+    container_name: flower
+    command: uv run celery -A src.core.celery_app flower --port=5555 --broker=amqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672//
+    ports:
+      - "5555:5555"
+    depends_on:
+      - rabbitmq
+
+  api:
+    build: .
+    container_name: rpa_api
+    command: uv run python -m src.main
+    ports:
+      - "8000:8000"
+    depends_on:
+      - rabbitmq
+    working_dir: /app

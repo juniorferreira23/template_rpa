@@ -12,7 +12,19 @@ from selenium.common.exceptions import (
 from src.core.log import logger
 
 
-def handle_exceptions(func):
+def handle_exceptions_selenium(func):
+    """Decorador para exceções do selenium
+
+    Args:
+        func (def): Função envelopada
+
+    Raises:
+        err (Exception): err
+
+    Returns:
+        _type_: wrapper
+    """
+
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         try:
@@ -22,10 +34,11 @@ def handle_exceptions(func):
             if hasattr(self, '_snapshot'):
                 self._snapshot(func.__name__)
             logger.error(
-                f'Element not found or not visible - {func.__name__} - {err}',
+                f'elemento não encontrado ou não visível - '
+                f'{func.__name__} - {err}',
                 exc_info=True,
             )
-            raise
+            raise err
 
         except (
             ElementClickInterceptedException,
@@ -35,37 +48,37 @@ def handle_exceptions(func):
                 self._snapshot(func.__name__)
             logger.error(
                 (
-                    f'Element not clickable or not interactable - '
+                    f'elemento não clicável ou não interativo - '
                     f'{func.__name__} - {err}'
                 ),
                 exc_info=True,
             )
-            raise
+            raise err
 
         except StaleElementReferenceException as err:
             if hasattr(self, '_snapshot'):
                 self._snapshot(func.__name__)
             logger.error(
-                f'Stale element reference - {func.__name__} - {err}',
+                f'referência de elemento obsoleto - {func.__name__} - {err}',
                 exc_info=True,
             )
-            raise
+            raise err
 
         except TimeoutException as err:
             if hasattr(self, '_snapshot'):
                 self._snapshot(func.__name__)
             logger.error(
-                f'Time out - {func.__name__} - {err}',
+                f'tempo de busca expirado - {func.__name__} - {err}',
                 exc_info=True,
             )
-            raise
+            raise err
 
         except Exception as err:
             if hasattr(self, '_snapshot'):
                 self._snapshot(func.__name__)
             logger.error(
-                f'Unhandled exception - {func.__name__} - {err}', exc_info=True
+                f'exceção não tratada - {func.__name__} - {err}', exc_info=True
             )
-            raise
+            raise err
 
     return wrapper

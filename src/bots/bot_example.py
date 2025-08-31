@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
 from src.bots.bot import Bot
-from src.core.exceptions import handle_exceptions
+from src.core.exceptions import handle_exceptions_selenium
 from src.core.log import logger
 
 
@@ -12,7 +12,7 @@ class BotExample(Bot):
     def __init__(self, driver: WebDriver, wait_explicit: int = 30):
         super().__init__(driver, wait_explicit)
 
-    @handle_exceptions
+    @handle_exceptions_selenium
     def login(self, username: str, password: str):
         login_field = self.driver.find_element(By.ID, 'userNameInput')
         login_field.send_keys(username)
@@ -21,7 +21,7 @@ class BotExample(Bot):
 
         logger.info('login successful')
 
-    @handle_exceptions
+    @handle_exceptions_selenium
     def get_disciplines(self):
         container_span = self.driver.find_element(
             By.ID,
@@ -40,8 +40,9 @@ class BotExample(Bot):
             print(i.text)
 
         logger.info('get disciplines successful')
+        return [d.text for d in diciplines]
 
-    @handle_exceptions
+    @handle_exceptions_selenium
     def navigate_to_payments(self):
         button_digital_wallet = self._wait_for(
             EC.element_to_be_clickable((
@@ -61,7 +62,7 @@ class BotExample(Bot):
 
         logger.info('navigate to payments successful')
 
-    @handle_exceptions
+    @handle_exceptions_selenium
     def navigate_to_attendance(self):
         button_request = self.driver.find_element(
             By.ID, 'wt15_wt21_wtMenu_wt9_wtSolicitacoesMenu'
@@ -74,7 +75,7 @@ class BotExample(Bot):
 
         logger.info('navigate to declaration successful')
 
-    @handle_exceptions
+    @handle_exceptions_selenium
     def download_attendance_statement(self):
         element = self._wait_for(
             EC.element_to_be_clickable((
