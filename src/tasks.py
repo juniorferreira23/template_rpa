@@ -6,7 +6,7 @@ from time import sleep
 
 from src.bots.bot_example import BotExample
 from src.core.celery_app import celery_app
-from src.core.env import env
+from src.core.settings import settings
 from src.core.webdriver import get_webdriver
 
 
@@ -24,9 +24,9 @@ def run_bot_example(headless_arg: bool) -> dict:
     try:
         bot = BotExample(driver=driver)
 
-        bot.navigate(url=env.URL)
+        bot.navigate(url=settings.URL)
 
-        bot.login(env.LOGIN, env.PASSWORD)
+        bot.login(settings.LOGIN, settings.PASSWORD)
 
         diciplines = bot.get_disciplines()
         bot.navigate_to_payments()

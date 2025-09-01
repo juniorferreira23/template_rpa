@@ -8,6 +8,16 @@ services:
     env_file:
       - .env
 
+  postgres:
+    image: postgres
+    container_name: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+
   worker:
     build: .
     container_name: celery_worker
@@ -36,9 +46,11 @@ services:
   api:
     build: .
     container_name: rpa_api
-    command: uv run python -m src.main
     ports:
       - "8000:8000"
     depends_on:
       - rabbitmq
     working_dir: /app
+
+volumes:
+  pgdata:

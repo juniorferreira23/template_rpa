@@ -29,4 +29,4 @@ RUN uv sync --locked
 COPY . /app
 
 # Comando padrão usando UV
-CMD ["uv", "run", "python", "-m", "src.main"]
+CMD ["uv", "run", "uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8000"]
